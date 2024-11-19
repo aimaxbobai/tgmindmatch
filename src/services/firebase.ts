@@ -1,15 +1,6 @@
-import { collection, addDoc, getDocs, query, where, orderBy, limit, updateDoc, doc, increment } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, orderBy, limit, updateDoc, doc, increment, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-
-// Types
-export interface Thought {
-  id?: string;
-  userId: string;
-  username: string;
-  content: string;
-  resonanceCount: number;
-  createdAt: Date;
-}
+import { Thought } from '../types/thought';
 
 // Collection references
 const thoughtsCollection = collection(db, 'thoughts');
@@ -20,7 +11,8 @@ export const createThought = async (thought: Omit<Thought, 'id' | 'resonanceCoun
     const docRef = await addDoc(thoughtsCollection, {
       ...thought,
       resonanceCount: 0,
-      createdAt: new Date()
+      createdAt: serverTimestamp(),
+      resonatedBy: []
     });
     return docRef.id;
   } catch (error) {
@@ -40,7 +32,7 @@ export const getThoughts = async (limitCount: number = 20) => {
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-      createdAt: doc.data().createdAt.toDate()
+      createdAt: doc.data().createdAt as Timestamp
     })) as Thought[];
   } catch (error) {
     console.error('Error getting thoughts:', error);
@@ -59,7 +51,7 @@ export const getUserThoughts = async (userId: string) => {
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-      createdAt: doc.data().createdAt.toDate()
+      createdAt: doc.data().createdAt as Timestamp
     })) as Thought[];
   } catch (error) {
     console.error('Error getting user thoughts:', error);

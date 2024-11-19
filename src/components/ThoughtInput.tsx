@@ -18,8 +18,8 @@ export default function ThoughtInput({ onThoughtCreated }: ThoughtInputProps) {
     setIsSubmitting(true);
     try {
       await createThought({
-        userId: user.id,
-        username: user.username,
+        userId: String(user.id),
+        username: user.username || `user_${user.id}`,
         content: content.trim()
       });
       setContent('');

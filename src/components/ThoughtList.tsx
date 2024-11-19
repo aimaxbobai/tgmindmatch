@@ -1,74 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import { getThoughts, incrementResonance, type Thought } from '../services/firebase';
-import { useUser } from '../contexts/UserContext';
+import { getThoughts, incrementResonance } from '../services/firebase';
+import { Thought } from '../types/thought';
+import ThoughtCard from './ThoughtCard';
 
 const ThoughtList: React.FC = () => {
   const [thoughts, setThoughts] = useState<Thought[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
+
+  const loadThoughts = async () => {
+    try {
+      const thoughtsData = await getThoughts();
+      setThoughts(thoughtsData);
+    } catch (error) {
+      console.error('Error loading thoughts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadThoughts = async () => {
-      try {
-        const thoughtsData = await getThoughts();
-        setThoughts(thoughtsData);
-      } catch (error) {
-        console.error('Error loading thoughts:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadThoughts();
   }, []);
 
   const handleResonance = async (thoughtId: string) => {
     try {
       await incrementResonance(thoughtId);
-      setThoughts(thoughts.map(thought => 
-        thought.id === thoughtId 
-          ? { ...thought, resonanceCount: thought.resonanceCount + 1 }
-          : thought
-      ));
+      await loadThoughts(); // Перезагружаем мысли после резонанса
     } catch (error) {
-      console.error('Error resonating with thought:', error);
+      console.error('Error handling resonance:', error);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center p-4">Loading thoughts...</div>;
+    return (
+      <div className="flex justify-center items-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
       {thoughts.map((thought) => (
-        <div
+        <ThoughtCard
           key={thought.id}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2"
-        >
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                @{thought.username}
-              </p>
-              <p className="mt-1 text-gray-900 dark:text-gray-100">
-                {thought.content}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => thought.id && handleResonance(thought.id)}
-              className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-500 transition-colors"
-            >
-              <span>✨</span>
-              <span>{thought.resonanceCount}</span>
-            </button>
-            <span className="text-sm text-gray-500">
-              {new Date(thought.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
+          thought={thought}
+          onResonance={() => thought.id && handleResonance(thought.id)}
+        />
       ))}
     </div>
   );
