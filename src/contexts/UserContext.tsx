@@ -26,33 +26,26 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initUser = async () => {
       try {
+        console.log('Initializing user...');
+        console.log('Raw WebApp object:', WebApp);
+        console.log('InitData:', WebApp?.initData);
+        console.log('InitDataUnsafe:', WebApp?.initDataUnsafe);
+        
         // Проверяем, что WebApp правильно инициализирован
         if (!WebApp || !WebApp.initData || !WebApp.initDataUnsafe?.user) {
-          console.log('WebApp initialization data:', {
+          console.error('WebApp initialization failed:', {
             webApp: !!WebApp,
             initData: !!WebApp?.initData,
             user: !!WebApp?.initDataUnsafe?.user
           });
-          
-          // Для тестирования создаем тестового пользователя
-          const testUser: User = {
-            id: '12345',
-            first_name: 'Test',
-            last_name: 'User',
-            username: 'testuser',
-            language_code: 'en',
-            is_premium: false,
-            added_to_attachment_menu: false,
-            allows_write_to_pm: true,
-          };
-          
-          setUser(testUser);
+          setError('Failed to initialize Telegram Web App');
           setLoading(false);
           return;
         }
 
         // Получаем данные пользователя из Telegram WebApp
         const tgUser = WebApp.initDataUnsafe.user;
+        console.log('Telegram user data:', tgUser);
 
         // Проверяем, существует ли пользователь в Firebase
         const usersRef = collection(db, 'users');
