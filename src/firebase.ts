@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -33,22 +33,3 @@ console.log('Firebase app initialized successfully');
 // Initialize Firestore
 export const db = getFirestore(app);
 console.log('Firestore initialized successfully');
-
-// Включаем оффлайн персистентность
-try {
-  enableIndexedDbPersistence(db)
-    .then(() => {
-      console.log('Firestore persistence enabled successfully');
-    })
-    .catch((err) => {
-      if (err.code === 'failed-precondition') {
-        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-      } else if (err.code === 'unimplemented') {
-        console.warn('The current browser does not support persistence.');
-      } else {
-        console.error('Error enabling persistence:', err);
-      }
-    });
-} catch (error) {
-  console.error('Error enabling persistence:', error);
-}

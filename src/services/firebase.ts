@@ -25,26 +25,22 @@ export const createThought = async (text: string, userId: string, nickname: stri
   }
 };
 
-export const getThoughts = async (limit: number = 20, searchQuery: string = ''): Promise<Thought[]> => {
+export const getThoughts = async (limitCount: number = 20, searchQuery: string = ''): Promise<Thought[]> => {
   try {
     console.log('Getting thoughts with query:', searchQuery);
-    let q;
-    
+    let q = query(
+      thoughtsCollection,
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    );
+
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase().trim();
       q = query(
         thoughtsCollection,
         where('textLower', '>=', searchLower),
         where('textLower', '<=', searchLower + '\uf8ff'),
-        orderBy('textLower'),
-        orderBy('createdAt', 'desc'),
-        limit
-      );
-    } else {
-      q = query(
-        thoughtsCollection,
-        orderBy('createdAt', 'desc'),
-        limit
+        limit(limitCount)
       );
     }
 
@@ -58,13 +54,12 @@ export const getThoughts = async (limit: number = 20, searchQuery: string = ''):
         text: data.text,
         userId: data.userId,
         nickname: data.nickname,
-        createdAt: data.createdAt?.toDate() || new Date(),
+        timestamp: data.createdAt?.toDate() || new Date(),
         resonanceCount: data.resonanceCount || 0,
         resonatedBy: data.resonatedBy || [],
       });
     });
 
-    console.log('Retrieved thoughts:', thoughts.length);
     return thoughts;
   } catch (error: any) {
     console.error('Error getting thoughts:', error);
