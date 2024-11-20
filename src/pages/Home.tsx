@@ -104,27 +104,29 @@ export default function Home() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-blue-50 to-white">
       {/* Header */}
       <div className="flex-none p-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src={user.image} alt="User" className="w-10 h-10 rounded-full shadow-sm" />
-            <span className="text-lg font-semibold text-gray-800">{user.nickname}</span>
+        <div className="container mx-auto max-w-5xl px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <img src={user.image} alt="User" className="w-10 h-10 rounded-full shadow-sm" />
+              <span className="text-lg font-semibold text-gray-800">{user.nickname}</span>
+            </div>
+            {/* Add Test Users Button - только для разработки */}
+            <button
+              onClick={handleAddTestUsers}
+              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              Add Test Users
+            </button>
           </div>
-          {/* Add Test Users Button - только для разработки */}
-          <button
-            onClick={handleAddTestUsers}
-            className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-          >
-            Add Test Users
-          </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden p-4">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <div className="flex-1 overflow-x-hidden p-4">
+        <div className="container mx-auto max-w-5xl px-4 space-y-6">
           {/* Thought Input */}
           <div className="bg-white rounded-xl shadow-sm p-4">
             <textarea
@@ -136,29 +138,31 @@ export default function Home() {
           </div>
 
           {/* Results Area */}
-          <div className="relative min-h-[500px] flex items-center justify-center bg-gradient-to-r from-blue-50/50 via-purple-50/50 to-blue-50/50 rounded-xl p-8">
+          <div className="relative min-h-[500px] flex items-center justify-center bg-gradient-to-r from-blue-50/50 via-purple-50/50 to-blue-50/50 rounded-xl p-8 overflow-visible">
             {/* Center Animation */}
             <div className="absolute inset-0 flex items-center justify-center">
               <CenterAnimation isSearching={isSearching} />
             </div>
 
             {/* Matched Users */}
-            <AnimatePresence>
-              {matchedUsers.map((match, index) => {
-                const angle = (index * 2 * Math.PI) / matchedUsers.length;
-                const distance = 180; // Расстояние от центра
-                return (
-                  <MatchedUser
-                    key={match.nickname}
-                    nickname={match.nickname}
-                    similarity={match.thoughtSimilarity}
-                    angle={angle}
-                    distance={distance}
-                    delay={index * 0.1}
-                  />
-                );
-              })}
-            </AnimatePresence>
+            <div className="relative w-full h-full">
+              <AnimatePresence>
+                {matchedUsers.map((match, index) => {
+                  const angle = (index * 2 * Math.PI) / matchedUsers.length;
+                  const distance = 200; // Увеличили расстояние от центра
+                  return (
+                    <MatchedUser
+                      key={match.nickname}
+                      nickname={match.nickname}
+                      similarity={match.thoughtSimilarity}
+                      angle={angle}
+                      distance={distance}
+                      delay={index * 0.1}
+                    />
+                  );
+                })}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>

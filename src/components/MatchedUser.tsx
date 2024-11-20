@@ -14,27 +14,21 @@ export const MatchedUser = ({ nickname, similarity, angle, distance, delay }: Ma
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0, x, y }}
+      initial={{ opacity: 0, scale: 0 }}
       animate={{ 
         opacity: 1, 
         scale: 1,
-        x,
-        y
       }}
       transition={{ 
         delay,
         duration: 0.5,
         ease: "easeOut"
       }}
-      className="absolute flex flex-col items-center"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
       style={{
-        transform: `translate(${x}px, ${y}px)`,
+        transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
       }}
     >
-      <div className="bg-white rounded-lg shadow-md p-3 flex flex-col items-center space-y-1">
-        <span className="text-sm font-medium text-gray-800">{nickname}</span>
-        <span className="text-xs text-blue-500 font-semibold">{similarity}% match</span>
-      </div>
       {/* Линия соединения с центром */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -44,9 +38,16 @@ export const MatchedUser = ({ nickname, similarity, angle, distance, delay }: Ma
         style={{
           width: Math.sqrt(x * x + y * y),
           transform: `rotate(${Math.atan2(y, x)}rad)`,
-          transformOrigin: '0 0'
+          transformOrigin: '0 0',
+          zIndex: 0
         }}
       />
+      
+      {/* Карточка пользователя */}
+      <div className="relative bg-white rounded-lg shadow-md p-3 flex flex-col items-center space-y-1 min-w-[120px] z-10">
+        <span className="text-sm font-medium text-gray-800 whitespace-nowrap">{nickname}</span>
+        <span className="text-xs text-blue-500 font-semibold">{similarity}% match</span>
+      </div>
     </motion.div>
   );
 };
