@@ -58,12 +58,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Проверяем, существует ли пользователь в Firebase
         const usersRef = collection(db, 'users');
+        console.log('Checking if user exists...');
         const q = query(usersRef, where('id', '==', String(tgUser.id)));
         const querySnapshot = await getDocs(q);
 
         let userData: User;
 
         if (querySnapshot.empty) {
+          console.log('User not found, creating new user...');
           // Создаем нового пользователя, фильтруя undefined значения
           const userDoc = {
             id: String(tgUser.id),
@@ -76,13 +78,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             allows_write_to_pm: tgUser.allows_write_to_pm || false,
           };
 
+          console.log('Creating user with data:', userDoc);
           const docRef = await addDoc(usersRef, userDoc);
           console.log('Created new user with ID:', docRef.id);
           userData = userDoc;
         } else {
+          console.log('User found in database');
           // Получаем существующего пользователя
           const doc = querySnapshot.docs[0];
           userData = doc.data() as User;
+          console.log('Existing user data:', userData);
         }
 
         setUser(userData);
