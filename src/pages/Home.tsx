@@ -136,15 +136,17 @@ export default function Home() {
           </div>
 
           {/* Results Area */}
-          <div className="relative h-[400px] flex items-center justify-center">
+          <div className="relative min-h-[500px] flex items-center justify-center bg-gradient-to-r from-blue-50/50 via-purple-50/50 to-blue-50/50 rounded-xl p-8">
             {/* Center Animation */}
-            <CenterAnimation isSearching={isSearching} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <CenterAnimation isSearching={isSearching} />
+            </div>
 
             {/* Matched Users */}
             <AnimatePresence>
               {matchedUsers.map((match, index) => {
                 const angle = (index * 2 * Math.PI) / matchedUsers.length;
-                const distance = 150; // Расстояние от центра
+                const distance = 180; // Расстояние от центра
                 return (
                   <MatchedUser
                     key={match.nickname}
