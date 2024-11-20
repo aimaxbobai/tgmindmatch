@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { CenterAnimation } from '../components/CenterAnimation';
 import { MatchedUser } from '../components/MatchedUser';
+import { seedTestUsers } from '../utils/seedTestUsers';
 
 interface MatchedUser {
   nickname: string;
@@ -49,6 +50,14 @@ export default function Home() {
       console.error('Error finding similar minds:', error);
     }
     setIsSearching(false);
+  };
+
+  const handleAddTestUsers = async () => {
+    await seedTestUsers();
+    // После добавления тестовых пользователей обновим поиск
+    if (currentThought) {
+      findSimilarMinds(currentThought);
+    }
   };
 
   useEffect(() => {
@@ -98,9 +107,18 @@ export default function Home() {
     <div className="h-full w-full flex flex-col bg-gradient-to-b from-blue-50 to-white">
       {/* Header */}
       <div className="flex-none p-4 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <img src={user.image} alt="User" className="w-10 h-10 rounded-full shadow-sm" />
-          <span className="text-lg font-semibold text-gray-800">{user.nickname}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={user.image} alt="User" className="w-10 h-10 rounded-full shadow-sm" />
+            <span className="text-lg font-semibold text-gray-800">{user.nickname}</span>
+          </div>
+          {/* Add Test Users Button - только для разработки */}
+          <button
+            onClick={handleAddTestUsers}
+            className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            Add Test Users
+          </button>
         </div>
       </div>
 
