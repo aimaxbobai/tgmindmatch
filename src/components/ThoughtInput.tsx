@@ -57,12 +57,11 @@ export default function ThoughtInput({ onThoughtCreated }: ThoughtInputProps) {
     
     try {
       const moodEmoji = selectedMood !== null ? MOODS[selectedMood].emoji + ' ' : '';
-      await createThought({
-        userId: String(user.id),
-        username: user.username || `user_${user.id}`,
-        content: moodEmoji + content.trim(),
-        resonatedBy: []
-      });
+      await createThought(
+        moodEmoji + content.trim(),
+        String(user.id),
+        user.username || `user_${user.id}`
+      );
       setContent('');
       setSelectedMood(null);
       onThoughtCreated();
