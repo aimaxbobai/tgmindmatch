@@ -64,19 +64,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let userData: User;
 
         if (querySnapshot.empty) {
-          // Создаем нового пользователя
+          // Создаем нового пользователя, фильтруя undefined значения
           const userDoc = {
             id: String(tgUser.id),
-            first_name: tgUser.first_name,
-            last_name: tgUser.last_name,
-            username: tgUser.username,
-            language_code: tgUser.language_code,
-            is_premium: tgUser.is_premium,
-            added_to_attachment_menu: tgUser.added_to_attachment_menu,
-            allows_write_to_pm: tgUser.allows_write_to_pm,
+            first_name: tgUser.first_name || null,
+            last_name: tgUser.last_name || null,
+            username: tgUser.username || null,
+            language_code: tgUser.language_code || null,
+            is_premium: tgUser.is_premium || false,
+            added_to_attachment_menu: tgUser.added_to_attachment_menu || false,
+            allows_write_to_pm: tgUser.allows_write_to_pm || false,
           };
 
-          await addDoc(usersRef, userDoc);
+          const docRef = await addDoc(usersRef, userDoc);
+          console.log('Created new user with ID:', docRef.id);
           userData = userDoc;
         } else {
           // Получаем существующего пользователя
