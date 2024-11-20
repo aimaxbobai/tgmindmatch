@@ -25,8 +25,8 @@ function App() {
   return (
     <UserProvider>
       <Router basename="/tgmindmatch">
-        <div className="h-full w-full">
-          <main className="h-full w-full">
+        <div className="min-h-screen h-full w-full flex flex-col">
+          <main className="flex-1">
             <Routes>
               <Route path="/" element={<WelcomeScreen />} />
               <Route path="/nickname" element={<NicknameSetup />} />

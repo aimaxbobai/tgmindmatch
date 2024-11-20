@@ -104,10 +104,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen h-full w-full flex flex-col bg-gradient-to-b from-blue-50 to-white">
       {/* Header */}
-      <div className="flex-none p-4 border-b border-gray-100">
-        <div className="container mx-auto max-w-5xl px-4">
+      <header className="flex-none w-full border-b border-gray-100">
+        <div className="container mx-auto max-w-5xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img src={user.image} alt="User" className="w-10 h-10 rounded-full shadow-sm" />
@@ -122,11 +122,11 @@ export default function Home() {
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-x-hidden p-4">
-        <div className="container mx-auto max-w-5xl px-4 space-y-6">
+      <main className="flex-1 w-full">
+        <div className="container mx-auto max-w-5xl px-4 py-6 space-y-6">
           {/* Thought Input */}
           <div className="bg-white rounded-xl shadow-sm p-4">
             <textarea
@@ -149,7 +149,7 @@ export default function Home() {
               <AnimatePresence>
                 {matchedUsers.map((match, index) => {
                   const angle = (index * 2 * Math.PI) / matchedUsers.length;
-                  const distance = 200; // Увеличили расстояние от центра
+                  const distance = 200;
                   return (
                     <MatchedUser
                       key={match.nickname}
@@ -165,7 +165,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
