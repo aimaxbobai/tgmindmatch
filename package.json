@@ -18,6 +18,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@firebase/firestore": "^4.7.5",
     "@twa-dev/sdk": "^7.10.1",
     "@twa-dev/types": "^7.10.0",
     "@types/node": "^22.9.0",
@@ -27,6 +28,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "firebase": "^11.0.2",
+    "firebase-tools": "^13.26.0",
     "framer-motion": "^11.11.17",
     "mongoose": "^8.8.2",
     "openai": "^4.72.0",

@@ -1,19 +1,53 @@
 import { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { Navigate } from 'react-router-dom';
-import ThoughtInput from '../components/ThoughtInput';
-import ThoughtList from '../components/ThoughtList';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon } from '@heroicons/react/24/solid';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+
+interface MatchedUser {
+  nickname: string;
+  thoughtSimilarity: number;
+}
 
 export default function Home() {
   const { user, loading: userLoading, error } = useUser();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentThought, setCurrentThought] = useState('');
+  const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleThoughtCreated = () => {
-    setRefreshKey(prev => prev + 1);
-    setIsModalOpen(false);
+  const findSimilarMinds = async (thought: string) => {
+    if (!thought.trim()) {
+      setMatchedUsers([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // В реальном приложении здесь будет более сложная логика сравнения мыслей
+      // Сейчас просто имитируем поиск похожих пользователей
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('nickname', '!=', user?.nickname));
+      const querySnapshot = await getDocs(q);
+      
+      const matches: MatchedUser[] = [];
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        // Простая имитация расчета схожести мыслей
+        const similarity = Math.random() * 100;
+        if (similarity > 50) { // Показываем только пользователей с схожестью > 50%
+          matches.push({
+            nickname: userData.nickname,
+            thoughtSimilarity: Math.round(similarity)
+          });
+        }
+      });
+
+      setMatchedUsers(matches.sort((a, b) => b.thoughtSimilarity - a.thoughtSimilarity));
+    } catch (error) {
+      console.error('Error finding similar minds:', error);
+    }
+    setIsSearching(false);
   };
 
   if (userLoading) {
@@ -31,7 +65,7 @@ export default function Home() {
     );
   }
 
-  if (error) {
+  if (error || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <motion.p 
@@ -39,21 +73,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="text-lg text-red-600 bg-red-50 px-6 py-4 rounded-lg shadow-sm"
         >
-          {error}
-        </motion.p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-lg text-gray-600 bg-gray-50 px-6 py-4 rounded-lg shadow-sm"
-        >
-          Please restart the app
+          {error || 'Please restart the app'}
         </motion.p>
       </div>
     );
@@ -64,72 +84,73 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            backgroundPosition: ['0% 0%', '100% 100%'],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            repeatType: 'reverse',
-          }}
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z" fill="%239C92AC" fill-opacity="0.4" fill-rule="evenodd"/%3E%3C/svg%3E")',
-          }}
-        />
+    <div className="h-full w-full flex flex-col bg-gradient-to-b from-blue-50 to-white">
+      <div className="flex-none p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <img src={user.image} alt="User" className="w-10 h-10 rounded-full shadow-sm" />
+          <span className="text-lg font-semibold text-gray-800">{user.nickname}</span>
+        </div>
       </div>
 
-      {/* Main content */}
-      <div className="relative container mx-auto px-4 py-8 max-w-2xl">
-        <motion.div 
-          className="space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <ThoughtList key={refreshKey} />
-        </motion.div>
-
-        {/* Floating action button */}
-        <motion.button
-          onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <PlusIcon className="w-6 h-6" />
-        </motion.button>
-
-        {/* Modal */}
-        <AnimatePresence>
-          {isModalOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setIsModalOpen(false);
-                }
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <textarea
+              value={currentThought}
+              onChange={(e) => {
+                setCurrentThought(e.target.value);
+                findSimilarMinds(e.target.value);
               }}
-            >
+              placeholder="Share your thought to find like-minded people..."
+              className="w-full h-32 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          <AnimatePresence>
+            {isSearching ? (
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-lg bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex justify-center py-4"
               >
-                <div className="p-6">
-                  <ThoughtInput onThoughtCreated={handleThoughtCreated} />
-                </div>
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            ) : matchedUsers.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-4"
+              >
+                <h3 className="text-lg font-medium text-gray-700">People with similar mindset:</h3>
+                {matchedUsers.map((match, index) => (
+                  <motion.div
+                    key={match.nickname}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center"
+                  >
+                    <span className="font-medium text-gray-800">{match.nickname}</span>
+                    <span className="text-sm text-gray-500">
+                      {match.thoughtSimilarity}% match
+                    </span>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : currentThought && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center text-gray-500"
+              >
+                No matches found yet. Try expressing your thought differently.
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

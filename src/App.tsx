@@ -25,12 +25,14 @@ function App() {
   return (
     <UserProvider>
       <Router basename="/tgmindmatch">
-        <div className="min-h-screen w-full overflow-y-auto bg-gradient-to-b from-purple-50 to-white">
-          <Routes>
-            <Route path="/" element={<WelcomeScreen />} />
-            <Route path="/nickname" element={<NicknameSetup />} />
-            <Route path="/home" element={<Home />} />
-          </Routes>
+        <div className="h-full w-full">
+          <main className="h-full w-full">
+            <Routes>
+              <Route path="/" element={<WelcomeScreen />} />
+              <Route path="/nickname" element={<NicknameSetup />} />
+              <Route path="/home" element={<Home />} />
+            </Routes>
+          </main>
         </div>
       </Router>
     </UserProvider>
