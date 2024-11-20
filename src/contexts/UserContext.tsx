@@ -27,6 +27,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initUser = async () => {
       try {
         console.log('Initializing user...');
+        
+        // Проверяем, запущено ли приложение в Telegram
+        if (!window.Telegram?.WebApp) {
+          console.error('Application must be opened in Telegram');
+          setError('This application must be opened in Telegram');
+          setLoading(false);
+          return;
+        }
+        
         console.log('Raw WebApp object:', WebApp);
         console.log('InitData:', WebApp?.initData);
         console.log('InitDataUnsafe:', WebApp?.initDataUnsafe);
