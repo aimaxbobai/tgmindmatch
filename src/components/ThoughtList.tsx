@@ -14,20 +14,47 @@ const ThoughtList: React.FC = () => {
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
   // Группировка мыслей по схожести
-  const groupThoughts = (thoughts: Thought[]) => {
-    // Здесь будет логика группировки мыслей
-    // Пока просто группируем по 2-3 мысли для демонстрации
+  const groupThoughts = (thoughts: Thought[]): Thought[][] => {
+    if (!thoughts.length) return [];
+
     const groups: Thought[][] = [];
-    let currentGroup: Thought[] = [];
-    
-    thoughts.forEach((thought, index) => {
-      currentGroup.push(thought);
-      if (currentGroup.length === (index % 2 === 0 ? 2 : 3) || index === thoughts.length - 1) {
-        groups.push([...currentGroup]);
-        currentGroup = [];
-      }
+    const used = new Set<string>();
+
+    thoughts.forEach((thought) => {
+      if (used.has(thought.id)) return;
+
+      const group = [thought];
+      used.add(thought.id);
+
+      // Находим похожие мысли
+      const similar = thoughts.filter((otherThought) => {
+        if (used.has(otherThought.id)) return false;
+        
+        // Проверяем схожесть по тегам
+        const thoughtTags = thought.tags || [];
+        const otherTags = otherThought.tags || [];
+        const commonTags = thoughtTags.filter(tag => otherTags.includes(tag));
+        
+        // Проверяем временную близость (в пределах 1 часа)
+        const timeThreshold = 60 * 60 * 1000; // 1 час в миллисекундах
+        const timeDiff = Math.abs(
+          new Date(thought.timestamp).getTime() - 
+          new Date(otherThought.timestamp).getTime()
+        );
+        
+        // Мысль считается похожей, если есть общие теги или она создана в близкое время
+        return commonTags.length > 0 || timeDiff < timeThreshold;
+      });
+
+      // Добавляем похожие мысли в группу
+      similar.slice(0, 2).forEach((similarThought) => {
+        group.push(similarThought);
+        used.add(similarThought.id);
+      });
+
+      groups.push(group);
     });
-    
+
     return groups;
   };
 

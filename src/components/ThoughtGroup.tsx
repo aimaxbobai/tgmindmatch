@@ -10,45 +10,52 @@ interface ThoughtGroupProps {
 }
 
 const ThoughtGroup: React.FC<ThoughtGroupProps> = ({ thoughts, onThoughtDeleted, onResonance }) => {
-  // Основная мысль группы (с наибольшим количеством резонансов)
+  if (!thoughts.length) return null;
+
   const mainThought = thoughts[0];
-  
+  const relatedThoughts = thoughts.slice(1);
+
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="relative p-4"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="relative"
     >
-      {/* Визуальный индикатор связи */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 to-pink-100/20 rounded-2xl backdrop-blur-sm" />
-      
       {/* Основная мысль */}
       <div className="mb-4">
         <ThoughtCard
           thought={mainThought}
           onDelete={onThoughtDeleted}
           onResonance={onResonance}
+          className="border-2 border-purple-500 shadow-lg"
         />
       </div>
-      
+
       {/* Связанные мысли */}
-      {thoughts.slice(1).map((thought, index) => (
-        <motion.div
-          key={thought.id}
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 0.9 }}
-          transition={{ delay: index * 0.1 }}
-          className="ml-8 mb-2 transform scale-95"
-        >
-          <ThoughtCard
-            thought={thought}
-            onDelete={onThoughtDeleted}
-            onResonance={onResonance}
-          />
-        </motion.div>
-      ))}
+      {relatedThoughts.length > 0 && (
+        <div className="ml-8 space-y-3">
+          {relatedThoughts.map((thought, index) => (
+            <motion.div
+              key={thought.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="relative"
+            >
+              {/* Линия связи */}
+              <div className="absolute -left-4 top-1/2 w-4 h-px bg-purple-300" />
+              
+              <ThoughtCard
+                thought={thought}
+                onDelete={onThoughtDeleted}
+                onResonance={onResonance}
+                className="border border-purple-300 shadow-md"
+              />
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 };
