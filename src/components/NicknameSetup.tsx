@@ -90,6 +90,14 @@ const NicknameSetup = () => {
         await updateDoc(docRef, { nickname });
         const updatedUserData = { ...querySnapshot.docs[0].data(), nickname } as User;
         setUser(updatedUserData);
+        
+        WebApp.showPopup({
+          title: 'Success!',
+          message: 'Nickname saved successfully!',
+          buttons: [{ type: 'ok' }]
+        });
+        
+        navigate('/home', { replace: true });
       } else {
         // Создаем нового пользователя
         const userData = {
@@ -103,15 +111,17 @@ const NicknameSetup = () => {
 
         await addDoc(usersRef, userData);
         setUser(userData);
+        
+        WebApp.showPopup({
+          title: 'Success!',
+          message: 'Nickname saved successfully!',
+          buttons: [{ type: 'ok' }]
+        });
+        
+        navigate('/home', { replace: true });
       }
 
-      WebApp.showPopup({
-        title: 'Success!',
-        message: 'Nickname saved successfully!',
-        buttons: [{ type: 'ok' }]
-      });
-
-      navigate('/');
+      setIsChecking(false);
     } catch (error) {
       console.error('Error saving nickname:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

@@ -2,15 +2,22 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
+import { useUser } from '../contexts/UserContext';
 
 const WelcomeScreen = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
 
   useEffect(() => {
+    // Перенаправление, если никнейм уже установлен
+    if (user && user.nickname) {
+      navigate('/home');
+    }
+
     // Отключаем нативный скролл в Telegram WebApp
     WebApp.setBackgroundColor('#ffffff');
     WebApp.expand();
-  }, []);
+  }, [user, navigate]);
 
   return (
     <motion.div 
