@@ -1,17 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { User } from '../types/user';
 
 interface UserContextType {
   user: User | null;
+  setUser: (user: User | null) => void;
   loading: boolean;
   error: string | null;
 }
 
 const UserContext = createContext<UserContextType>({
   user: null,
+  setUser: () => {},
   loading: true,
   error: null,
 });
@@ -36,17 +38,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         
-        console.log('Raw WebApp object:', WebApp);
-        console.log('InitData:', WebApp?.initData);
-        console.log('InitDataUnsafe:', WebApp?.initDataUnsafe);
-        
         // Проверяем, что WebApp правильно инициализирован
         if (!WebApp || !WebApp.initData || !WebApp.initDataUnsafe?.user) {
-          console.error('WebApp initialization failed:', {
-            webApp: !!WebApp,
-            initData: !!WebApp?.initData,
-            user: !!WebApp?.initDataUnsafe?.user
-          });
+          console.error('WebApp initialization failed');
           setError('Failed to initialize Telegram Web App');
           setLoading(false);
           return;
@@ -54,20 +48,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Получаем данные пользователя из Telegram WebApp
         const tgUser = WebApp.initDataUnsafe.user;
-        console.log('Telegram user data:', tgUser);
 
         // Проверяем, существует ли пользователь в Firebase
         const usersRef = collection(db, 'users');
-        console.log('Checking if user exists...');
         const q = query(usersRef, where('id', '==', String(tgUser.id)));
         const querySnapshot = await getDocs(q);
 
         let userData: User;
 
         if (querySnapshot.empty) {
-          console.log('User not found, creating new user...');
-          // Создаем нового пользователя, фильтруя undefined значения
-          const userDoc = {
+          // Создаем нового пользователя
+          const userDoc: User = {
             id: String(tgUser.id),
             first_name: tgUser.first_name || null,
             last_name: tgUser.last_name || null,
@@ -78,16 +69,23 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             allows_write_to_pm: tgUser.allows_write_to_pm || false,
           };
 
-          console.log('Creating user with data:', userDoc);
-          const docRef = await addDoc(usersRef, userDoc);
-          console.log('Created new user with ID:', docRef.id);
+          await addDoc(usersRef, userDoc);
           userData = userDoc;
         } else {
-          console.log('User found in database');
           // Получаем существующего пользователя
           const doc = querySnapshot.docs[0];
           userData = doc.data() as User;
-          console.log('Existing user data:', userData);
+          
+          // Обновляем данные пользователя, если они изменились
+          const updatedFields: Partial<User> = {};
+          if (userData.first_name !== tgUser.first_name) updatedFields.first_name = tgUser.first_name;
+          if (userData.last_name !== tgUser.last_name) updatedFields.last_name = tgUser.last_name;
+          if (userData.username !== tgUser.username) updatedFields.username = tgUser.username;
+          
+          if (Object.keys(updatedFields).length > 0) {
+            await updateDoc(doc.ref, updatedFields);
+            userData = { ...userData, ...updatedFields };
+          }
         }
 
         setUser(userData);
@@ -102,8 +100,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initUser();
   }, []);
 
+  const contextValue = {
+    user,
+    setUser,
+    loading,
+    error,
+  };
+
   return (
-    <UserContext.Provider value={{ user, loading, error }}>
+    <UserContext.Provider value={contextValue}>
       {children}
     </UserContext.Provider>
   );

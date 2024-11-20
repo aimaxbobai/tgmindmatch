@@ -2,10 +2,10 @@ import { Timestamp } from 'firebase/firestore';
 
 export interface Thought {
   id?: string;
+  text: string;
   userId: string;
-  username: string;
-  content: string;
+  nickname: string;
   resonanceCount: number;
-  createdAt: Timestamp;
-  resonatedBy?: string[];
+  resonatedBy: string[];
+  createdAt: Date | Timestamp;
 }

@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Правила для коллекции мыслей
+    match /thoughts/{thoughtId} {
+      allow read: if true;
+      allow create: if request.resource.data.userId != null;
+      allow update: if request.resource.data.userId == resource.data.userId ||
+                   (request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['resonanceCount', 'resonatedBy']));
+      allow delete: if request.auth.uid == resource.data.userId;
+    }
+    
+    // Правила для коллекции пользователей
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
