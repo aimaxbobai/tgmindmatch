@@ -79,22 +79,32 @@ const NicknameSetup = () => {
       }
 
       const usersRef = collection(db, 'users');
-      const userData = {
-        id: String(webAppUser.id),
-        nickname,
-        first_name: webAppUser.first_name || null,
-        last_name: webAppUser.last_name || null,
-        username: webAppUser.username || null,
-        createdAt: new Date().toISOString()
-      };
 
-      console.log('Attempting to save user data:', userData);
+      // Проверяем, существует ли пользователь с таким ID
+      const q = query(usersRef, where('id', '==', String(webAppUser.id)));
+      const querySnapshot = await getDocs(q);
 
-      // Создаем нового пользователя
-      const docRef = await addDoc(usersRef, userData);
-      console.log('User document created with ID:', docRef.id);
+      if (!querySnapshot.empty) {
+        // Обновляем существующего пользователя
+        const docRef = querySnapshot.docs[0].ref;
+        await updateDoc(docRef, { nickname });
+        const updatedUserData = { ...querySnapshot.docs[0].data(), nickname } as User;
+        setUser(updatedUserData);
+      } else {
+        // Создаем нового пользователя
+        const userData = {
+          id: String(webAppUser.id),
+          nickname,
+          first_name: webAppUser.first_name || null,
+          last_name: webAppUser.last_name || null,
+          username: webAppUser.username || null,
+          createdAt: new Date().toISOString()
+        };
 
-      setUser(userData);
+        await addDoc(usersRef, userData);
+        setUser(userData);
+      }
+
       WebApp.showPopup({
         title: 'Success!',
         message: 'Nickname saved successfully!',
