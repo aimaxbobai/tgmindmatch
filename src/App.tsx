@@ -24,7 +24,7 @@ function App() {
 
   return (
     <UserProvider>
-      <Router basename="/tgmindmatch">
+      <Router>
         <div className="min-h-screen h-full w-full flex flex-col">
           <main className="flex-1">
             <Routes>
