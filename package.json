@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Telegram Mini App for finding people with similar mindset",
   "main": "server.js",
-  "homepage": "https://maxbobojonov.github.io/tgmindmatch",
+  "homepage": "https://aimaxbobai.github.io/tgmindmatch",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
