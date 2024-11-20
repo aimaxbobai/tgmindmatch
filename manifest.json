@@ -1,0 +1,11 @@
+{
+  "name": "MindMatch",
+  "short_name": "MindMatch",
+  "description": "Connect with like-minded people through your thoughts",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": []
+}
